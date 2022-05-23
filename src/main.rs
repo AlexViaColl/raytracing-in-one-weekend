@@ -1,4 +1,7 @@
+pub mod ray;
 pub mod vec3;
+
+use ray::*;
 use vec3::*;
 
 fn main() {

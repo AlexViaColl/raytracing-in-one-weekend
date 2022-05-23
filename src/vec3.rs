@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, DivAssign, Mul, MulAssign, Neg, Sub};
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Copy, Clone)]
 pub struct Vec3 {
     pub e: [f64; 3],
 }
@@ -37,6 +37,12 @@ impl Mul<f64> for Vec3 {
     type Output = Self;
     fn mul(self, t: f64) -> Self {
         Self::new(self.e[0] * t, self.e[1] * t, self.e[2] * t)
+    }
+}
+impl Add for Vec3 {
+    type Output = Self;
+    fn add(self, v: Self) -> Self {
+        Self::new(self.e[0] + v.e[0], self.e[1] + v.e[1], self.e[2] + v.e[2])
     }
 }
 
