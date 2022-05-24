@@ -1,5 +1,7 @@
 # Ray Tracing in One Weekend
 
+![Raytracing](thumbnail.png)
+
 Based on the [book](https://raytracing.github.io/books/RayTracingInOneWeekend.html) by Peter Shirley.
 
 # Requirements
