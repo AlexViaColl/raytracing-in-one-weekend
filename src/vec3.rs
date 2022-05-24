@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, DivAssign, Mul, MulAssign, Neg, Sub};
+use std::ops::{Add, Mul, Neg, Sub};
 
 use super::rand::{random_double, random_double_range};
 
@@ -112,6 +112,12 @@ pub fn unit_vector(v: Vec3) -> Vec3 {
 }
 pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
     v - n * 2.0 * dot(v, n)
+}
+pub fn refract(uv: Vec3, n: Vec3, etai_over_etat: f64) -> Vec3 {
+    let cos_theta = dot(-uv, n).min(1.0);
+    let r_out_perp = (uv + n * cos_theta) * etai_over_etat;
+    let r_out_parallel = n * -((1.0 - r_out_perp.length_squared()).abs().sqrt());
+    r_out_perp + r_out_parallel
 }
 
 pub fn write_color(pixel_color: Color, samples_per_pixel: i32) {
