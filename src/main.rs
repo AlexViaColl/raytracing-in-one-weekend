@@ -41,19 +41,25 @@ fn main() {
 }
 
 fn ray_color(r: Ray) -> Color {
-    if hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, &r) {
-        return Color::new(1.0, 0.0, 0.0);
+    let mut t = hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, &r);
+    if t > 0.0 {
+        let N = unit_vector(r.at(t) - Vec3::new(0.0, 0.0, -1.0));
+        return Color::new(N.x() + 1.0, N.y() + 1.0, N.z() + 1.0) * 0.5;
     }
     let unit_direction = unit_vector(r.direction());
-    let t = 0.5 * (unit_direction.y() + 1.0);
+    t = 0.5 * (unit_direction.y() + 1.0);
     Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
 }
 
-fn hit_sphere(center: Point3, radius: f64, r: &Ray) -> bool {
+fn hit_sphere(center: Point3, radius: f64, r: &Ray) -> f64 {
     let oc = r.origin() - center;
     let a = dot(r.direction(), r.direction());
     let b = dot(oc, r.direction()) * 2.0;
     let c = dot(oc, oc) - radius * radius;
     let discriminant = b * b - 4.0 * a * c;
-    discriminant > 0.0
+    if discriminant < 0.0 {
+        -1.0
+    } else {
+        (-b - discriminant.sqrt()) / (2.0 * a)
+    }
 }
