@@ -9,5 +9,5 @@ Based on the [book](https://raytracing.github.io/books/RayTracingInOneWeekend.ht
 
 # Quickstart
 ```console
-cargo run
+cargo run > image.ppm
 ```
