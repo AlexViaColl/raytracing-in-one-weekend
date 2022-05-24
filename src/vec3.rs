@@ -67,11 +67,20 @@ pub fn unit_vector(v: Vec3) -> Vec3 {
     v * f
 }
 
-pub fn write_color(pixel_color: Color) {
+pub fn write_color(pixel_color: Color, samples_per_pixel: i32) {
+    let mut r = pixel_color.x();
+    let mut g = pixel_color.y();
+    let mut b = pixel_color.z();
+
+    let scale = 1.0 / samples_per_pixel as f64;
+    r *= scale;
+    g *= scale;
+    b *= scale;
+
     println!(
         "{} {} {}",
-        (255.999 * pixel_color.x()) as i32,
-        (255.999 * pixel_color.y()) as i32,
-        (255.999 * pixel_color.z()) as i32
+        (256.0 * r.clamp(0.0, 0.999)) as i32,
+        (256.0 * g.clamp(0.0, 0.999)) as i32,
+        (256.0 * b.clamp(0.0, 0.999)) as i32
     );
 }
