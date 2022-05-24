@@ -18,6 +18,7 @@ fn main() {
     let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as i32;
     let samples_per_pixel = 100;
+    let max_depth = 50;
 
     // World
     let mut world = HittableList::default();
@@ -38,7 +39,7 @@ fn main() {
                 let u = (i as f64 + random_double()) / (image_width as f64 - 1.0);
                 let v = (j as f64 + random_double()) / (image_height as f64 - 1.0);
                 let r = cam.get_ray(u, v);
-                pixel_color = pixel_color + ray_color(r, &world);
+                pixel_color = pixel_color + ray_color(r, &world, max_depth);
             }
             write_color(pixel_color, samples_per_pixel);
         }
@@ -46,10 +47,19 @@ fn main() {
     eprintln!("\nDone.")
 }
 
-fn ray_color(r: Ray, world: &dyn Hittable) -> Color {
+#[rustfmt::skip]
+fn ray_color(r: Ray, world: &dyn Hittable, depth: i32) -> Color {
     let mut rec = HitRecord::default();
-    if world.hit(&r, 0.0, f64::INFINITY, &mut rec) {
-        return (rec.normal + Color::new(1.0, 1.0, 1.0)) * 0.5;
+
+    if depth <= 0 {
+        return Color::new(0.0, 0.0, 0.0);
+    }
+
+    if world.hit(&r, 0.001, f64::INFINITY, &mut rec) {
+        //let target = rec.p + rec.normal + Vec3::random_in_unit_sphere();  // A Simple Diffuse Material
+        let target = rec.p + rec.normal + Vec3::random_unit_vector();       // True Lambertian Reflection
+        //let target = rec.p + Vec3::random_in_hemisphere(rec.normal);      // Alternative Diffuse Formulation
+        return ray_color(Ray::new(rec.p, target - rec.p), world, depth - 1) * 0.5;
     }
     let unit_direction = unit_vector(r.direction());
     let t = 0.5 * (unit_direction.y() + 1.0);

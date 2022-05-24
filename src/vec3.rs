@@ -1,5 +1,7 @@
 use std::ops::{Add, AddAssign, DivAssign, Mul, MulAssign, Neg, Sub};
 
+use super::rand::{random_double, random_double_range};
+
 #[derive(Default, Debug, Copy, Clone)]
 pub struct Vec3 {
     pub e: [f64; 3],
@@ -24,6 +26,36 @@ impl Vec3 {
     }
     pub fn length_squared(&self) -> f64 {
         self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
+    }
+    pub fn random() -> Self {
+        Self::new(random_double(), random_double(), random_double())
+    }
+    pub fn random_range(min: f64, max: f64) -> Self {
+        Self::new(
+            random_double_range(min, max),
+            random_double_range(min, max),
+            random_double_range(min, max),
+        )
+    }
+    pub fn random_in_unit_sphere() -> Self {
+        loop {
+            let p = Vec3::random_range(-1.0, 1.0);
+            if p.length_squared() >= 1.0 {
+                continue;
+            }
+            return p;
+        }
+    }
+    pub fn random_unit_vector() -> Self {
+        unit_vector(Self::random_in_unit_sphere())
+    }
+    pub fn random_in_hemisphere(normal: Vec3) -> Self {
+        let in_unit_sphere = Self::random_in_unit_sphere();
+        if dot(in_unit_sphere, normal) > 0.0 {
+            in_unit_sphere
+        } else {
+            -in_unit_sphere
+        }
     }
 }
 
@@ -72,10 +104,11 @@ pub fn write_color(pixel_color: Color, samples_per_pixel: i32) {
     let mut g = pixel_color.y();
     let mut b = pixel_color.z();
 
+    // Divide the color by the number of samples and gamma-correct for gamma=2.0
     let scale = 1.0 / samples_per_pixel as f64;
-    r *= scale;
-    g *= scale;
-    b *= scale;
+    r = (scale * r).sqrt();
+    g = (scale * g).sqrt();
+    b = (scale * b).sqrt();
 
     println!(
         "{} {} {}",
