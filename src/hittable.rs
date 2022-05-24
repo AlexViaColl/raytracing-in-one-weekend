@@ -1,10 +1,12 @@
+use super::material::Material;
 use super::ray::*;
 use super::vec3::*;
 
-#[derive(Default, Copy, Clone)]
+#[derive(Default, Clone)]
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
+    pub mat: Option<Box<dyn Material>>,
     pub t: f64,
     pub front_face: bool,
 }
@@ -50,7 +52,7 @@ impl Hittable for HittableList {
             if object.hit(r, t_min, closest_so_far, &mut temp_rec) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
-                *rec = temp_rec;
+                *rec = temp_rec.clone();
             }
         }
 

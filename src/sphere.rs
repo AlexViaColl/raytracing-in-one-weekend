@@ -1,4 +1,5 @@
 use super::hittable::{HitRecord, Hittable};
+use super::material::Material;
 use super::ray::*;
 use super::vec3::*;
 
@@ -6,10 +7,15 @@ use super::vec3::*;
 pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
+    pub mat: Option<Box<dyn Material>>,
 }
 impl Sphere {
-    pub fn new(center: Point3, radius: f64) -> Self {
-        Self { center, radius }
+    pub fn new(center: Point3, radius: f64, m: Box<dyn Material>) -> Self {
+        Self {
+            center,
+            radius,
+            mat: Some(m),
+        }
     }
 }
 impl Hittable for Sphere {
@@ -36,6 +42,7 @@ impl Hittable for Sphere {
         rec.p = r.at(rec.t);
         let outward_normal = (rec.p - self.center) * (1.0 / self.radius);
         rec.set_face_normal(r, outward_normal);
+        rec.mat = self.mat.clone();
         true
     }
 }

@@ -1,5 +1,6 @@
 pub mod camera;
 pub mod hittable;
+pub mod material;
 pub mod rand;
 pub mod ray;
 pub mod sphere;
@@ -7,11 +8,13 @@ pub mod vec3;
 
 use camera::*;
 use hittable::{HitRecord, Hittable, HittableList};
+use material::*;
 use rand::*;
 use ray::*;
 use sphere::Sphere;
 use vec3::*;
 
+#[rustfmt::skip]
 fn main() {
     // Image
     let aspect_ratio = 16.0 / 9.0;
@@ -22,8 +25,16 @@ fn main() {
 
     // World
     let mut world = HittableList::default();
-    world.add(Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
-    world.add(Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
+
+    let material_group = Box::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
+    let material_center = Box::new(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
+    let material_left = Box::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
+    let material_right = Box::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
+
+    world.add(Box::new(Sphere::new(Point3::new( 0.0, -100.5, -1.0), 100.0, material_group)));
+    world.add(Box::new(Sphere::new(Point3::new( 0.0,    0.0, -1.0),   0.5, material_center)));
+    world.add(Box::new(Sphere::new(Point3::new(-1.0,    0.0, -1.0),   0.5, material_left)));
+    world.add(Box::new(Sphere::new(Point3::new( 1.0,    0.0, -1.0),   0.5, material_right)));
 
     // Camera
     let cam = Camera::new();
@@ -33,7 +44,7 @@ fn main() {
 
     for j in (0..image_height).rev() {
         eprint!("\nScanlines remaining: {}", j);
-        for i in (0..image_width).rev() {
+        for i in 0..image_width {
             let mut pixel_color = Color::new(0.0, 0.0, 0.0);
             for _s in 0..samples_per_pixel {
                 let u = (i as f64 + random_double()) / (image_width as f64 - 1.0);
@@ -56,10 +67,17 @@ fn ray_color(r: Ray, world: &dyn Hittable, depth: i32) -> Color {
     }
 
     if world.hit(&r, 0.001, f64::INFINITY, &mut rec) {
+        let mut scattered = Ray::default();
+        let mut attenuation = Color::default();
+        if rec.mat.as_deref().unwrap().scatter(&r, &rec, &mut attenuation, &mut scattered) {
+            return attenuation * ray_color(scattered, world, depth - 1);
+        }
+        return Color::new(0.0, 0.0, 0.0);
+
         //let target = rec.p + rec.normal + Vec3::random_in_unit_sphere();  // A Simple Diffuse Material
-        let target = rec.p + rec.normal + Vec3::random_unit_vector();       // True Lambertian Reflection
-        //let target = rec.p + Vec3::random_in_hemisphere(rec.normal);      // Alternative Diffuse Formulation
-        return ray_color(Ray::new(rec.p, target - rec.p), world, depth - 1) * 0.5;
+        //let target = rec.p + rec.normal + Vec3::random_unit_vector();       // True Lambertian Reflection
+        //let target = rec.p + Vec3::random_in_hemisphere(rec.normal);      // Alternative Diffuse Formulation (Hemispherical scattering)
+        //return ray_color(Ray::new(rec.p, target - rec.p), world, depth - 1) * 0.5;
     }
     let unit_direction = unit_vector(r.direction());
     let t = 0.5 * (unit_direction.y() + 1.0);

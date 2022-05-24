@@ -27,6 +27,12 @@ impl Vec3 {
     pub fn length_squared(&self) -> f64 {
         self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
     }
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        self.e[0].abs() < s && self.e[1].abs() < s && self.e[2].abs() < s
+    }
+
+    // Static methods
     pub fn random() -> Self {
         Self::new(random_double(), random_double(), random_double())
     }
@@ -71,6 +77,12 @@ impl Mul<f64> for Vec3 {
         Self::new(self.e[0] * t, self.e[1] * t, self.e[2] * t)
     }
 }
+impl Mul<Vec3> for Vec3 {
+    type Output = Self;
+    fn mul(self, v: Vec3) -> Self {
+        Self::new(self.e[0] * v.e[0], self.e[1] * v.e[1], self.e[2] * v.e[2])
+    }
+}
 impl Add for Vec3 {
     type Output = Self;
     fn add(self, v: Self) -> Self {
@@ -97,6 +109,9 @@ pub fn cross(u: Vec3, v: Vec3) -> Vec3 {
 pub fn unit_vector(v: Vec3) -> Vec3 {
     let f = 1.0 / v.length();
     v * f
+}
+pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+    v - n * 2.0 * dot(v, n)
 }
 
 pub fn write_color(pixel_color: Color, samples_per_pixel: i32) {
