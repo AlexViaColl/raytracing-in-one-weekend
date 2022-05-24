@@ -40,7 +40,12 @@ fn main() {
     world.add(Box::new(Sphere::new(Point3::new( 1.0,    0.0, -1.0),   0.5, material_right)));
 
     // Camera
-    let cam = Camera::new(Point3::new(-2.0, 2.0, 1.0), Point3::new(0.0, 0.0, -1.0), Vec3::new(0.0, 1.0, 0.0), 20.0, aspect_ratio);
+    let from = Point3::new(3.0, 3.0, 2.0);
+    let at = Point3::new(0.0, 0.0, -1.0);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let dist_to_focus = (from - at).length();
+    let apperture = 2.0;
+    let cam = Camera::new(from, at, vup, 20.0, aspect_ratio, apperture, dist_to_focus);
 
     // Render
     print!("P3\n{} {}\n255\n", image_width, image_height);
